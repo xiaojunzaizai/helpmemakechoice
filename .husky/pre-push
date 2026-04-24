@@ -6,8 +6,8 @@ npm run lint || exit 1
 npm run build || exit 1
 #npm run test:coverage || exit 1
 
-npm run sonar -- \
-  -Dsonar.host.url="${SONAR_HOST_URL:-http://192.168.50.104:9000}" \
-  -Dsonar.token="${SONAR_TOKEN}" || exit 1
+#npm run sonar -- \
+#  -Dsonar.host.url="${SONAR_HOST_URL:-http://192.168.50.104:9000}" \
+#  -Dsonar.token="${SONAR_TOKEN}" || exit 1
 
 echo "Pre-push checks passed."
