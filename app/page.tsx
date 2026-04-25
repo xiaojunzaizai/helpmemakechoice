@@ -28,6 +28,7 @@ function normalizeItem(s: string) {
 }
 
 export default function Page() {
+
   const [items, setItems] = useState<string[]>(() => {
   // 只在组件首次挂载时执行一次
   try {
@@ -46,20 +47,6 @@ export default function Page() {
   const [input, setInput] = useState("");
   const [winner, setWinner] = useState<string | null>(null);
 
-  // 读取 sessionStorage（刷新保留；关闭 tab/窗口会清空 sessionStorage）
-  // useEffect(() => {
-  //   try {
-  //     const raw = sessionStorage.getItem(STORAGE_KEY);
-  //     if (raw) {
-  //       const parsed = JSON.parse(raw);
-  //       if (Array.isArray(parsed) && parsed.every((x) => typeof x === "string")) {
-  //         setItems(parsed);
-  //       }
-  //     }
-  //   } catch {
-  //     // ignore
-  //   }
-  // }, []);
 
   // 写入 sessionStorage
   useEffect(() => {
