@@ -153,8 +153,9 @@ export default function Wheel({ items, disabled, onFinish }: Props) {
     // 我们的扇区从正上方开始（-90°），这里用 +90 把上方变成 0 基准
     const angleFromTop = (normalized + 90) % 360;
 
-    // 转盘是顺时针增加；指针固定在上方，实际命中是反向
-    const hit = (360 - angleFromTop) % 360;
+    // 转盘是顺时针增加；指针固定在上方，实际命中是反向 (这段是因为箭头在下面朝上指，新改动是箭头在上面朝下指，所以这个就不需要了)
+    // const hit = (360 - angleFromTop) % 360;
+    const hit = angleFromTop
 
     const idx = Math.floor(hit / step);
     return items[idx] ?? items[0];
