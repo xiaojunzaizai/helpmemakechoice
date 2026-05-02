@@ -105,7 +105,7 @@ export default function Page() {
 
         <div className="actions">
           <button className="btn ghost" onClick={reset} title="重置为默认选项并清空 sessionStorage">
-            Reset
+            重置
           </button>
         </div>
       </header>
@@ -169,7 +169,7 @@ export default function Page() {
       </section>
 
       <footer className="footer">
-        <span className="muted">This page is aimed to help you make a choice</span>
+        <span className="muted">这个页面小工具是来帮您作出选择的</span>
       </footer>
     </main>
   );
