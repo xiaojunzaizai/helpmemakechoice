@@ -151,13 +151,17 @@ export default function Wheel({ items, disabled, onFinish }: Props) {
     const normalized = ((deg % 360) + 360) % 360;
 
     // 我们的扇区从正上方开始（-90°），这里用 +90 把上方变成 0 基准
-    const angleFromTop = (normalized + 90) % 360;
-
+    // const angleFromTop = (normalized + 90) % 360;
+    const angleFromTop = deg + 90
     // 转盘是顺时针增加；指针固定在上方，实际命中是反向 (这段是因为箭头在下面朝上指，新改动是箭头在上面朝下指，所以这个就不需要了)
     // const hit = (360 - angleFromTop) % 360;
     const hit = angleFromTop
 
-    const idx = Math.floor(hit / step);
+    const idx = Math.floor(hit / step) % n;
+
+    console.log('deg', deg, 'normalized', normalized, 'angleFromTop', angleFromTop, 'hit', hit, 'idx', idx);
+    console.log('items[idx]', items[idx]);
+    console.log('items', items);
     return items[idx] ?? items[0];
   };
 
@@ -167,10 +171,11 @@ export default function Wheel({ items, disabled, onFinish }: Props) {
     setSpinning(true);
 
     // 基础随机角 + 多圈（圈数做大一点更有“抽奖感”）
-    const extraTurns = 6 + Math.floor(Math.random() * 5); // 6~10圈
+    // const extraTurns = 6 + Math.floor(Math.random() * 5); // 6~10圈
     const randomAngle = Math.random() * 360;
-
+    const extraTurns = 0;
     const target = rotationDeg + extraTurns * 360 + randomAngle;
+    console.log('spin target', target);
 
     // 更新角度（触发 CSS transition）
     setRotationDeg(target);
