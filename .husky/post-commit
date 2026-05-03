@@ -1,9 +1,9 @@
 #!/usr/bin/env sh
 
-echo "Running post-commit SonarQube checks..."
+echo -e "\nRunning post-commit SonarQube checks...\n"
 
 npm run sonar -- \
   -Dsonar.host.url="${SONAR_HOST_URL:-http://192.168.50.104:9000}" \
   -Dsonar.token="${SONAR_TOKEN}" || exit 1
 
-echo "Post-commit check pass"
+echo -e "\nPost-commit check pass\n"
