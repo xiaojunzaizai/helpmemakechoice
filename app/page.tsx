@@ -1,21 +1,27 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import Wheel from "./components/Wheel";
 
 const STORAGE_KEY = "what_to_eat_wheel_items_v1";
 
 const DEFAULT_ITEMS = [
-  "川系",
+  "川菜",
   "湘菜",
   "粤菜",
+  "淮扬菜",
+  "鲁菜",
+  "东北菜",
   "牛排",
-  "烤肉",
+  "巴西烤肉",
   "火锅",
   "日料",
   "韩式烤肉",
   "韩式炸鸡",
-  "东南亚",
+  "韩式豆腐汤",
+  "泰餐",
+  "越南粉(PHO)",
+  "印度咖喱",
   "轻食沙拉",
   "披萨",
   "汉堡",
@@ -29,27 +35,38 @@ function normalizeItem(s: string) {
 
 export default function Page() {
 
-  const [items, setItems] = useState<string[]>(() => {
-  // 只在组件首次挂载时执行一次
-  try {
-    const raw = sessionStorage.getItem(STORAGE_KEY);
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed) && parsed.every((x) => typeof x === "string")) {
-        return parsed;
+  const [items, setItems] = useState(() => {
+    if (typeof window === 'undefined') return DEFAULT_ITEMS; // SSR 时返回默认值
+
+    try {
+      const raw = sessionStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.every((x) => typeof x === "string")) {
+          return parsed;
+        }
       }
+    } catch {
+      // ignore
     }
-  } catch {
-    // ignore
-  }
-  return DEFAULT_ITEMS;
-});
+    return DEFAULT_ITEMS;
+  });
   const [input, setInput] = useState("");
   const [winner, setWinner] = useState<string | null>(null);
+  const mountedRef = useRef(false);
 
 
+  useEffect(() => {
+    mountedRef.current = true;
+  }, []);
+
+  // 删除读取 sessionStorage 的 useEffect（已移到 useState 初始化）
+
+  // 组件挂载后才渲染 Wheel（避免 SSR/CSR 不一致）
   // 写入 sessionStorage
   useEffect(() => {
+    if (!mountedRef.current) return;
+
     try {
       sessionStorage.setItem(STORAGE_KEY, JSON.stringify(items));
     } catch {
@@ -139,7 +156,7 @@ export default function Page() {
           <div className="inputRow">
             <input
               className="input"
-              placeholder="输入一个选项，例如：麻辣烫 / 砂锅 / 泰餐…"
+              placeholder="输入一个选项，例如：麻辣烫 / 砂锅…"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => {
