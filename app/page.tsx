@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { use, useEffect, useMemo, useState } from "react";
 import Wheel from "./components/Wheel";
 
 const STORAGE_KEY = "what_to_eat_wheel_items_v1";
@@ -40,8 +40,13 @@ export default function Page() {
   const [winner, setWinner] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
 
+
   useEffect(() => {
     setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if(!mounted) return;
 
     try {
       const raw = sessionStorage.getItem(STORAGE_KEY);
@@ -55,7 +60,7 @@ export default function Page() {
       // ignore
     }
 
-  }, []);
+  }, [mounted]);
 
   // 组件挂载后才渲染 Wheel（避免 SSR/CSR 不一致）
   // 写入 sessionStorage
