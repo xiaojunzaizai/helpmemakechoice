@@ -12,23 +12,25 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const isGithubPages = process.env.GITHUB_PAGES === "true";
+const basePath = isGithubPages ? "/helpmemakechoice" : "";
+
 export const metadata: Metadata = {
   title: "Help Me Make Choice!!!",
   description: "A fun wheel to help you make a choice",
   icons: {
-    // icon: "/转盘1.png",   // 👈 你的图标路径
     icon: [
       {
-        url: "/spin.png",
+        url: `${basePath}/spin.png`,
         type: "image/png",
         sizes: "1024x1024",
       },
       {
-        url: "/spin_180.png",
+        url: `${basePath}/spin_180.png`,
         type: "image/png",
         sizes: "180x180",
       },
-    ],   // 👈 你的图标路径
+    ], 
   },
 };
 
