@@ -36,7 +36,7 @@ function normalizeItem(s: string) {
 export default function Page() {
 
   const [items, setItems] = useState(() => {
-    if (typeof window === 'undefined') return DEFAULT_ITEMS; // SSR 时返回默认值
+    if (typeof globalThis.window === 'undefined') return DEFAULT_ITEMS; // SSR 时返回默认值
 
     try {
       const raw = sessionStorage.getItem(STORAGE_KEY);
