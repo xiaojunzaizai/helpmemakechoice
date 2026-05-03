@@ -1,6 +1,6 @@
 "use client";
 
-import React, { use, useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import Wheel from "./components/Wheel";
 
 const STORAGE_KEY = "what_to_eat_wheel_items_v1";
@@ -35,7 +35,22 @@ function normalizeItem(s: string) {
 
 export default function Page() {
 
-  const [items, setItems] = useState(DEFAULT_ITEMS);
+  const [items, setItems] = useState(() => {
+    if (typeof window === 'undefined') return DEFAULT_ITEMS; // SSR 时返回默认值
+
+    try {
+      const raw = sessionStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.every((x) => typeof x === "string")) {
+          return parsed;
+        }
+      }
+    } catch {
+      // ignore
+    }
+    return DEFAULT_ITEMS;
+  });
   const [input, setInput] = useState("");
   const [winner, setWinner] = useState<string | null>(null);
   const mountedRef = useRef(false);
@@ -45,22 +60,7 @@ export default function Page() {
     mountedRef.current = true;
   }, []);
 
-  useEffect(() => {
-    if(!mountedRef.current) return;
-
-    try {
-      const raw = sessionStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed) && parsed.every((x) => typeof x === "string")) {
-          setItems(parsed);
-        }
-      }
-    } catch {
-      // ignore
-    }
-
-  }, []);
+  // 删除读取 sessionStorage 的 useEffect（已移到 useState 初始化）
 
   // 组件挂载后才渲染 Wheel（避免 SSR/CSR 不一致）
   // 写入 sessionStorage
