@@ -1,6 +1,6 @@
 "use client";
 
-import React, { use, useEffect, useMemo, useState } from "react";
+import React, { use, useEffect, useMemo, useRef, useState } from "react";
 import Wheel from "./components/Wheel";
 
 const STORAGE_KEY = "what_to_eat_wheel_items_v1";
@@ -38,15 +38,15 @@ export default function Page() {
   const [items, setItems] = useState(DEFAULT_ITEMS);
   const [input, setInput] = useState("");
   const [winner, setWinner] = useState<string | null>(null);
-  const [mounted, setMounted] = useState(false);
+  const mountedRef = useRef(false);
 
 
   useEffect(() => {
-    setMounted(true);
+    mountedRef.current = true;
   }, []);
 
   useEffect(() => {
-    if(!mounted) return;
+    if(!mountedRef.current) return;
 
     try {
       const raw = sessionStorage.getItem(STORAGE_KEY);
@@ -60,19 +60,19 @@ export default function Page() {
       // ignore
     }
 
-  }, [mounted]);
+  }, []);
 
   // 组件挂载后才渲染 Wheel（避免 SSR/CSR 不一致）
   // 写入 sessionStorage
   useEffect(() => {
-    if (!mounted) return;
+    if (!mountedRef.current) return;
 
     try {
       sessionStorage.setItem(STORAGE_KEY, JSON.stringify(items));
     } catch {
       // ignore
     }
-  }, [items, mounted]);
+  }, [items]);
 
   const canSpin = items.length >= 2;
 
