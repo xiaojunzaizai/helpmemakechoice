@@ -6,16 +6,22 @@ import Wheel from "./components/Wheel";
 const STORAGE_KEY = "what_to_eat_wheel_items_v1";
 
 const DEFAULT_ITEMS = [
-  "川系",
+  "川菜",
   "湘菜",
   "粤菜",
+  "淮扬菜",
+  "鲁菜",
+  "东北菜",
   "牛排",
-  "烤肉",
+  "巴西烤肉",
   "火锅",
   "日料",
   "韩式烤肉",
   "韩式炸鸡",
-  "东南亚",
+  "韩式豆腐汤",
+  "泰餐",
+  "越南粉(PHO)",
+  "印度咖喱",
   "轻食沙拉",
   "披萨",
   "汉堡",
@@ -29,33 +35,39 @@ function normalizeItem(s: string) {
 
 export default function Page() {
 
-  const [items, setItems] = useState<string[]>(() => {
-  // 只在组件首次挂载时执行一次
-  try {
-    const raw = sessionStorage.getItem(STORAGE_KEY);
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed) && parsed.every((x) => typeof x === "string")) {
-        return parsed;
-      }
-    }
-  } catch {
-    // ignore
-  }
-  return DEFAULT_ITEMS;
-});
+  const [items, setItems] = useState(DEFAULT_ITEMS);
   const [input, setInput] = useState("");
   const [winner, setWinner] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
 
+  useEffect(() => {
+    setMounted(true);
 
+    try {
+      const raw = sessionStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.every((x) => typeof x === "string")) {
+          setItems(parsed);
+        }
+      }
+    } catch {
+      // ignore
+    }
+
+  }, []);
+
+  // 组件挂载后才渲染 Wheel（避免 SSR/CSR 不一致）
   // 写入 sessionStorage
   useEffect(() => {
+    if (!mounted) return;
+
     try {
       sessionStorage.setItem(STORAGE_KEY, JSON.stringify(items));
     } catch {
       // ignore
     }
-  }, [items]);
+  }, [items, mounted]);
 
   const canSpin = items.length >= 2;
 
@@ -139,7 +151,7 @@ export default function Page() {
           <div className="inputRow">
             <input
               className="input"
-              placeholder="输入一个选项，例如：麻辣烫 / 砂锅 / 泰餐…"
+              placeholder="输入一个选项，例如：麻辣烫 / 砂锅…"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => {
