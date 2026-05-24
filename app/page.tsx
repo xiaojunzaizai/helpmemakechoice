@@ -1,7 +1,22 @@
 "use client";
 
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import {
+  App as MyApp,
+  Button,
+  Card,
+  ConfigProvider,
+  Flex,
+  Input,
+  Space,
+  Tag,
+  Typography,
+  theme,
+} from "antd";
+import { PlusOutlined, ReloadOutlined } from "@ant-design/icons";
+import React, { useEffect, useMemo, useState } from "react";
 import Wheel from "./components/Wheel";
+
+const { Text, Title } = Typography;
 
 const STORAGE_KEY = "what_to_eat_wheel_items_v1";
 
@@ -27,6 +42,7 @@ const DEFAULT_ITEMS = [
   "汉堡",
   "面馆",
   "烧烤",
+  "美式炸鸡",
 ];
 
 function normalizeItem(s: string) {
@@ -35,29 +51,30 @@ function normalizeItem(s: string) {
 
 export default function Page() {
 
-  const [items, setItems] = useState(() => {
-    if (globalThis?.window === undefined) return DEFAULT_ITEMS; // SSR 时返回默认值
-
-    try {
-      const raw = sessionStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed) && parsed.every((x) => typeof x === "string")) {
-          return parsed;
-        }
-      }
-    } catch {
-      // ignore
-    }
-    return DEFAULT_ITEMS;
-  });
+  const [items, setItems] = useState<string[]>(DEFAULT_ITEMS);
   const [input, setInput] = useState("");
   const [winner, setWinner] = useState<string | null>(null);
-  const mountedRef = useRef(false);
-
+  const [storageReady, setStorageReady] = useState(false);
 
   useEffect(() => {
-    mountedRef.current = true;
+    window.queueMicrotask(() => {
+      try {
+        const raw = window.sessionStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (
+            Array.isArray(parsed) &&
+            parsed.every((x) => typeof x === "string")
+          ) {
+            setItems(parsed);
+          }
+        }
+      } catch {
+        // ignore
+      } finally {
+        setStorageReady(true);
+      }
+    });
   }, []);
 
   // 删除读取 sessionStorage 的 useEffect（已移到 useState 初始化）
@@ -65,14 +82,15 @@ export default function Page() {
   // 组件挂载后才渲染 Wheel（避免 SSR/CSR 不一致）
   // 写入 sessionStorage
   useEffect(() => {
-    if (!mountedRef.current) return;
+
+    if (!storageReady) return;
 
     try {
       sessionStorage.setItem(STORAGE_KEY, JSON.stringify(items));
     } catch {
       // ignore
     }
-  }, [items]);
+  }, [items, storageReady]);
 
   const canSpin = items.length >= 2;
 
@@ -108,86 +126,116 @@ export default function Page() {
   };
 
   const subtitle = useMemo(() => {
-    if (winner) return `恭喜你，今天就吃：${winner}`;
+    if (winner) return `就决定是你了！！！！！今天就吃：${winner}`;
     return "用幸运大转盘决定今天吃什么";
   }, [winner]);
 
   return (
-    <main className="page">
-      <header className="header">
-        <div className="titleWrap">
-          <h1 className="title">今天吃什么</h1>
-          <p className="subtitle">{subtitle}</p>
-        </div>
+    <ConfigProvider
+      theme={{
+        algorithm: theme.defaultAlgorithm,
+        token: {
+          borderRadius: 8,
+          colorPrimary: "#1677ff",
+          colorInfo: "#1677ff",
+          fontFamily:
+            "var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial",
+        },
+        components: {
+          Card: {
+            headerBg: "transparent",
+          },
+        },
+      }}
+    >
+      <MyApp>
+        <main className="page">
+          <header className="header">
+            <div className="titleWrap">
+              <Title className="title" level={1}>
+                今天吃什么
+              </Title>
+              <Text className="subtitle">{subtitle}</Text>
+            </div>
 
-        <div className="actions">
-          <button className="btn ghost" onClick={reset} title="重置为默认选项并清空 sessionStorage">
-            重置
-          </button>
-        </div>
-      </header>
+            <Button
+              icon={<ReloadOutlined />}
+              onClick={reset}
+              title="重置为默认选项并清空 sessionStorage"
+            >
+              重置
+            </Button>
+          </header>
 
-      <section className="grid">
-        <div className="card wheelCard">
-          <div className="cardHeader">
-            <div>
-              <div className="cardTitle">幸运大转盘</div>
-              <div className="cardDesc">
+          <section className="grid">
+            <Card
+              className="panel wheelCard"
+              title="幸运大转盘"
+              extra={
+                <Tag color={canSpin ? "processing" : "warning"}>
+                  {items.length} 个选项
+                </Tag>
+              }
+            >
+              <Text className="cardDesc" type="secondary">
                 {canSpin ? "点击 Spin 开始旋转" : "至少需要 2 个选项才能旋转"}
-              </div>
-            </div>
-          </div>
+              </Text>
 
-          <Wheel
-            items={items}
-            disabled={!canSpin}
-            onFinish={(name) => setWinner(name)}
-          />
-        </div>
+              <Wheel
+                items={items}
+                disabled={!canSpin}
+                onFinish={(name) => setWinner(name)}
+              />
+            </Card>
 
-        <div className="card listCard">
-          <div className="cardHeader">
-            <div>
-              <div className="cardTitle">备选列表</div>
-              <div className="cardDesc">添加你的备选，刷新不会丢失（关闭页面才清空）</div>
-            </div>
-          </div>
+            <Card className="panel listCard" title="备选列表">
+              <Space className="listContent" orientation="vertical" size={16}>
+                <Text className="cardDesc" type="secondary">
+                  添加你的备选，刷新不会丢失（关闭页面才清空）
+                </Text>
+                <Flex className="inputRow" gap={8}>
+                  <Input
+                    allowClear
+                    placeholder="输入一个选项，例如：麻辣烫 / 砂锅 / 泰餐"
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onPressEnter={addItem}
+                  />
+                  <Button type="primary" icon={<PlusOutlined />} onClick={addItem}>
+                    添加
+                  </Button>
+                </Flex>
 
-          <div className="inputRow">
-            <input
-              className="input"
-              placeholder="输入一个选项，例如：麻辣烫 / 砂锅…"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") addItem();
-              }}
-            />
-            <button className="btn" onClick={addItem}>
-              添加
-            </button>
-          </div>
+                <div className="chips">
+                  {items.map((x) => (
+                    <Tag
+                      className="choiceTag"
+                      key={x}
+                      closable
+                      onClose={(event) => {
+                        event.preventDefault();
+                        removeItem(x);
+                      }}
+                    >
+                      {x}
+                    </Tag>
+                  ))}
+                </div>
 
-          <div className="chips">
-            {items.map((x) => (
-              <div className="chip" key={x}>
-                <span className="chipText">{x}</span>
-                <button className="chipX" onClick={() => removeItem(x)} aria-label={`删除 ${x}`}>
-                  ×
-                </button>
-              </div>
-            ))}
-          </div>
+                <Text className="hint" type="secondary">
+                  小提示：删除到只剩 1 个选项时将无法旋转；重置可恢复默认列表。
+                </Text>
+              </Space>
+            </Card>
+          </section>
 
-          <div className="hint">
-            小提示：删除到只剩 1 个选项时将无法旋转；Reset 可恢复默认列表。
-          </div>
-        </div>
-      </section>
-
-      <footer className="footer">
-        <span className="muted">这个页面小工具是来帮您作出选择的</span>
-      </footer>
-    </main>
+          <footer className="footer">
+            <Text className="muted" type="secondary">
+              这个页面小工具是来帮您作出选择的
+            </Text>
+          </footer>
+        </main>
+      </MyApp>
+    </ConfigProvider>
   );
 }
