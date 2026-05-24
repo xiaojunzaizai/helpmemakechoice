@@ -1,5 +1,7 @@
 "use client";
 
+import { Button } from "antd";
+import { ThunderboltOutlined } from "@ant-design/icons";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 
 type Props = {
@@ -194,9 +196,17 @@ export default function Wheel({ items, disabled, onFinish }: Props) {
         <canvas ref={canvasRef} />
       </div>
 
-      <button className="spinBtn" onClick={spin} disabled={disabled || spinning}>
+      <Button
+        className="spinBtn"
+        type="primary"
+        size="large"
+        icon={<ThunderboltOutlined />}
+        onClick={spin}
+        disabled={disabled || spinning}
+        loading={spinning}
+      >
         {spinning ? "旋转中…" : "Spin"}
-      </button>
+      </Button>
     </div>
   );
 }
