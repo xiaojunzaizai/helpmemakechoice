@@ -57,9 +57,9 @@ export default function Page() {
   const [storageReady, setStorageReady] = useState(false);
 
   useEffect(() => {
-    window.queueMicrotask(() => {
+    globalThis.queueMicrotask(() => {
       try {
-        const raw = window.sessionStorage.getItem(STORAGE_KEY);
+        const raw = globalThis.sessionStorage.getItem(STORAGE_KEY);
         if (raw) {
           const parsed = JSON.parse(raw);
           if (
