@@ -60,7 +60,7 @@ export default function Wheel({ items, disabled, onFinish }: Props) {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const dpr = Math.max(1, Math.floor(window.devicePixelRatio || 1));
+    const dpr = Math.max(1, Math.floor(globalThis.devicePixelRatio || 1));
     canvas.width = size * dpr;
     canvas.height = size * dpr;
     canvas.style.width = `${size}px`;
